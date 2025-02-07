@@ -7,6 +7,13 @@ import { ExecutorSettings } from "../settings/Settings";
 import { ChildProcess } from "child_process";
 
 export const TOGGLE_HTML_SIGIL = `TOGGLE_HTML_${Math.random().toString(16).substring(2)}`;
+const SEPARATOR = '<IPC_SEPERATOR>';
+
+interface Packet {
+	action: string;
+	data: string;
+	options: Record<string, any>;
+}
 
 export class Outputter extends EventEmitter {
 	codeBlockElement: HTMLElement;
@@ -390,8 +397,10 @@ export class Outputter extends EventEmitter {
 		if (this.htmlBuffer !== "") {
 			this.makeOutputVisible();
 
+			const packet: Packet = this.parsePacket(this.htmlBuffer);
+
 			const content = document.createElement("div");
-			content.innerHTML = this.htmlBuffer;
+			content.innerHTML = packet.action;
 			for (const childElem of Array.from(content.childNodes))
 				element.appendChild(childElem);
 
@@ -400,6 +409,22 @@ export class Outputter extends EventEmitter {
 
 			this.htmlBuffer = "";
 		}
+	}
+
+	private parsePacket(buffer: string): Packet {
+		const [action, data, optionsStr] = buffer.split(SEPARATOR);
+
+		if (!action) throw `Invalid packet: ${buffer}.`;
+
+		let options: Record<string, unknown> | undefined;
+		if (!optionsStr) return { action, data, options };
+
+		try {
+			options = JSON.parse(optionsStr);
+		} catch (e) {
+			throw new Error(`Failed to parse options JSON: ${(e as Error).message}`);
+		}
+		return { action, data, options };
 	}
 
 	/**
