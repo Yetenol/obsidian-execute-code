@@ -13,7 +13,7 @@
 
 import * as os from "os";
 import { Platform } from 'obsidian';
-import { TOGGLE_HTML_SIGIL } from "src/output/Outputter";
+import { SEPARATOR, TOGGLE_HTML_SIGIL } from "src/output/Outputter";
 import { ExecutorSettings } from "src/settings/Settings";
 
 // Regex for all languages.
@@ -184,8 +184,9 @@ function expandPythonHtmlMacro(source: string): string {
 		const html = match.groups.html;
 
 		const toggle = JSON.stringify(TOGGLE_HTML_SIGIL);
+		const separate = JSON.stringify(SEPARATOR);
 
-		source = source.replace(match[0], `print(${toggle}); print(${html}); print(${toggle})`)
+		source = source.replace(match[0], `print(${toggle} + "print_html" + ${separate}); print(${html}); print(${toggle})`)
 	}
 	return source;
 }

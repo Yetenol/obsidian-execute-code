@@ -7,7 +7,7 @@ import { ExecutorSettings } from "../settings/Settings";
 import { ChildProcess } from "child_process";
 
 export const TOGGLE_HTML_SIGIL = `TOGGLE_HTML_${Math.random().toString(16).substring(2)}`;
-const SEPARATOR = '<IPC_SEPERATOR>';
+export const SEPARATOR = '<IPC_SEPERATOR>';
 
 interface Packet {
 	action: string;
@@ -400,7 +400,12 @@ export class Outputter extends EventEmitter {
 			const packet: Packet = this.parsePacket(this.htmlBuffer);
 
 			const content = document.createElement("div");
-			content.innerHTML = packet.action;
+			if (packet.action !== "print_html") {
+				this.writeErr(`Unknown actions: >>>${packet.action}<<<`);
+			}
+
+			content.innerHTML = packet.data;
+
 			for (const childElem of Array.from(content.childNodes))
 				element.appendChild(childElem);
 
