@@ -186,7 +186,7 @@ function expandPythonHtmlMacro(source: string): string {
 		const toggle = JSON.stringify(TOGGLE_HTML_SIGIL);
 		const separate = JSON.stringify(SEPARATOR);
 
-		source = source.replace(match[0], `print(${toggle} + "print_html" + ${separate}); print(${html}); print(${toggle})`)
+		source = source.replace(match[0], `print(${toggle} + "print_html" + ${separate} + ${html} + ${toggle});`)
 	}
 	return source;
 }
