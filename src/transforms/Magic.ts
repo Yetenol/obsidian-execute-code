@@ -19,6 +19,7 @@ import { ExecutorSettings } from "src/settings/Settings";
 // Regex for all languages.
 const SHOW_REGEX = /@show\(["'](?<path>[^<>?*=!\n#()\[\]{}]+)["'](,\s*(?<width>\d+[\w%]+),?\s*(?<height>\d+[\w%]+))?(,\s*(?<align>left|center|right))?\)/g;
 const HTML_REGEX = /@html\((?<html>[^)]+)\)/g;
+const MARKDOWN_REGEX = /@print_markdown\((?<markdown>[^)]+)\)/g;
 const VAULT_REGEX = /@vault/g
 const VAULT_PATH_REGEX = /@vault_path/g
 const VAULT_URL_REGEX = /@vault_url/g
@@ -104,6 +105,7 @@ export function expandPython(source: string, settings: ExecutorSettings): string
 	}
 	source = expandPythonShowImage(source);
 	source = expandPythonHtmlMacro(source);
+	source = expandPythonMarkdown(source);
 	return source;
 }
 
@@ -182,11 +184,20 @@ function expandPythonHtmlMacro(source: string): string {
 	const matches = source.matchAll(HTML_REGEX);
 	for (const match of matches) {
 		const html = match.groups.html;
-
 		const toggle = JSON.stringify(TOGGLE_HTML_SIGIL);
 		const separate = JSON.stringify(SEPARATOR);
+		source = source.replace(match[0], `print(${toggle} + "print_html" + ${separate} + ${html} + ${toggle})`);
+	}
+	return source;
+}
 
-		source = source.replace(match[0], `print(${toggle} + "print_html" + ${separate} + ${html} + ${toggle});`)
+function expandPythonMarkdown(source: string): string {
+	const matches = source.matchAll(MARKDOWN_REGEX);
+	for (const match of matches) {
+		const markdown = match.groups.markdown;
+		const toggle = JSON.stringify(TOGGLE_HTML_SIGIL);
+		const separate = JSON.stringify(SEPARATOR);
+		source = source.replace(match[0], `print(${toggle} + "print_markdown" + ${separate} + ${markdown} + ${toggle})`);
 	}
 	return source;
 }
